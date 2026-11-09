@@ -1,0 +1,44 @@
+<!-- 薪资页：上-实时薪 / 中-小金库组件 / 下-倒计时与进度条 -->
+<view class="page">
+    <!-- 实时薪资 + 状态 + 提现 -->
+    <view class="block-live">
+        <text class="block-title">实时薪资</text>
+        <view class="amount-row amount-row-lg">
+            <text class="currency">¥</text>
+            <text class="amount live">{{liveSalaryText}}</text>
+        </view>
+        <text class="status-pill">{{statusText}}</text>
+        <button
+            class="btn-withdraw"
+            bindtap="onWithdraw"
+            disabled="{{!canWithdraw}}"
+        >
+            提现
+        </button>
+    </view>
+
+    <!-- 累计已提现金额（牛皮纸袋） -->
+    <view class="block-pouch">
+        <vault-bag amount="{{pouchSalaryText}}" />
+    </view>
+
+    <!-- 距离上班/下班秒数 + 进度条 -->
+    <view class="block-progress">
+        <view class="progress-meta">
+            <text class="progress-meta-label">{{countdownLabel}}</text>
+            <text class="progress-meta-value">{{countdownSeconds}} 秒</text>
+        </view>
+
+        <view class="progress-track">
+            <view class="progress-fill-wrap" style="width: {{progressPercent}}%;">
+                <view class="progress-fill"></view>
+                <view class="progress-thumb" wx:if="{{progressPercent > 0}}"></view>
+            </view>
+        </view>
+
+        <view class="progress-foot">
+            <text class="time-mark">现在</text>
+            <text class="time-mark">{{progressFootRight}}</text>
+        </view>
+    </view>
+</view>

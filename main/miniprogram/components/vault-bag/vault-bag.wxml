@@ -1,0 +1,16 @@
+<!-- 牛皮纸袋：木夹 kf-clip、卷口 kf-roll、袋身便签展示 amount -->
+<view class="vault-wrap">
+    <view class="kf">
+        <view class="kf-clip"></view>
+        <view class="kf-roll"></view>
+        <view class="kf-body">
+            <view class="kf-sticker">
+                <text class="kf-note">今日入账</text>
+                <view class="bag-amount tone-kraft">
+                    <text class="bag-currency">¥</text>
+                    <text class="bag-value">{{amount}}</text>
+                </view>
+            </view>
+        </view>
+    </view>
+</view>

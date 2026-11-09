@@ -1,6 +1,7 @@
 {
   "pages": [
-    "pages/index/index"
+    "pages/index/index",
+    "pages/salary/salary"
   ],
   "window": {
     "navigationBarTitleText": "工资计时器",

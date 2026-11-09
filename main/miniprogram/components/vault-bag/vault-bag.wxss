@@ -1,0 +1,94 @@
+/* 小金库：纯视觉，kf-* 为牛皮纸袋结构块 */
+
+.vault-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.bag-amount {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+}
+
+.bag-currency {
+    margin-right: 6rpx;
+    font-size: 34rpx;
+    font-weight: 600;
+}
+
+.bag-value {
+    font-size: 56rpx;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.kf {
+    width: 360rpx;
+}
+
+.kf-clip {
+    position: relative;
+    z-index: 3;
+    width: 34rpx;
+    height: 70rpx;
+    margin: 0 auto -40rpx;
+    border-radius: 6rpx;
+    background: linear-gradient(90deg, #d9b98c, #c9a272);
+    box-shadow: 0 4rpx 8rpx rgba(80, 50, 20, 0.25);
+}
+
+.kf-roll {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 52rpx;
+    border-radius: 6rpx;
+    background: linear-gradient(180deg, #b9875a 0%, #a77546 100%);
+    box-shadow: 0 6rpx 0 rgba(70, 40, 10, 0.15);
+}
+
+.kf-body {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 56rpx 28rpx 64rpx;
+    border-radius: 0 0 10rpx 10rpx;
+    background:
+        linear-gradient(90deg, rgba(0, 0, 0, 0.1) 0, transparent 9%, transparent 91%, rgba(0, 0, 0, 0.1) 100%),
+        linear-gradient(180deg, #c99a66 0%, #b98854 100%);
+    box-shadow: 0 14rpx 30rpx rgba(90, 60, 20, 0.22);
+}
+
+.kf-sticker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 18rpx 30rpx 22rpx;
+    border: 2rpx dashed #c9b38f;
+    border-radius: 14rpx;
+    background: #fffaf0;
+    box-shadow: 0 4rpx 10rpx rgba(70, 40, 10, 0.18);
+    transform: rotate(-3deg);
+}
+
+.kf-note {
+    margin-bottom: 6rpx;
+    color: #a0815a;
+    font-size: 20rpx;
+    letter-spacing: 4rpx;
+}
+
+.tone-kraft .bag-currency {
+    color: #8a6236;
+}
+
+.tone-kraft .bag-value {
+    color: #5a3b1c;
+    font-size: 50rpx;
+}
