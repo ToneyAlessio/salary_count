@@ -1,34 +1,120 @@
-/* 这是首页自己的样式，只影响首页，不会影响别的页面。
+/* 单位 rpx：屏宽视为 750rpx，不同机型比例一致 */
 
-   写法规则：先写「选谁」，再用花括号写「怎么变样」。
-   比如 .card { ... } 表示「class 叫 card 的那个盒子」。 */
-
+/* ---------- 页面与标题 ---------- */
 .page {
-    /* 整个页面的外框，留出四周空白，别让内容贴着屏幕边缘 */
     box-sizing: border-box;
     min-height: 100vh;
-    padding: 48rpx 32rpx;
+    padding: 56rpx 40rpx 64rpx;
 }
 
-.card {
-    /* 一张白色卡片 */
-    box-sizing: border-box;
+.header {
     display: flex;
-    padding: 48rpx 36rpx;
-    border: 2rpx solid #e5e8eb;
-    border-radius: 24rpx;
-    background: #ffffff;
-    flex-direction: column; /* 让里面的文字上下排列 */
+    padding: 0 8rpx 44rpx;
+    flex-direction: column;
 }
 
-.title {
+.brand {
     color: #1f2329;
-    font-size: 48rpx;
+    font-size: 52rpx;
     font-weight: 700;
+    letter-spacing: 2rpx;
 }
 
-.desc {
+.slogan {
     margin-top: 16rpx;
-    color: #646a73;
+    color: #8a9099;
+    font-size: 26rpx;
+}
+
+/* ---------- 表单卡片 ---------- */
+.card {
+    padding: 4rpx 36rpx;
+    border-radius: 28rpx;
+    background: #ffffff;
+    box-shadow: 0 8rpx 32rpx rgba(31, 35, 41, 0.06);
+}
+
+.field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 36rpx 0;
+    border-bottom: 2rpx solid #f0f2f5;
+}
+
+.field:last-child {
+    border-bottom: none;
+}
+
+.label {
+    color: #1f2329;
+    font-size: 30rpx;
+    font-weight: 500;
+}
+
+.value-area {
+    display: flex;
+    align-items: baseline;
+}
+
+.unit {
+    margin-right: 6rpx;
+    color: #8a9099;
     font-size: 28rpx;
+}
+
+/* 宽度由 wxml 内联 style 按字数计算，此处不设 width */
+.input {
+    color: #1f2329;
+    font-size: 36rpx;
+    font-weight: 600;
+    text-align: right;
+}
+
+.input-placeholder {
+    color: #c3c8cf;
+    font-size: 30rpx;
+    font-weight: 400;
+}
+
+.suffix {
+    margin-left: 8rpx;
+    color: #8a9099;
+    font-size: 26rpx;
+}
+
+.time {
+    color: #1769e0;
+    font-size: 36rpx;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.arrow {
+    margin-left: 12rpx;
+    color: #c3c8cf;
+    font-size: 36rpx;
+    line-height: 1;
+}
+
+/* ---------- 主按钮 ---------- */
+.btn {
+    margin-top: 60rpx;
+    height: 96rpx;
+    padding: 0;
+    border-radius: 48rpx;
+    background: #1769e0;
+    color: #ffffff;
+    font-size: 32rpx;
+    font-weight: 600;
+    line-height: 96rpx;
+    text-align: center;
+}
+
+.btn::after {
+    border: none;
+}
+
+.btn:active {
+    background: #1257bd;
 }

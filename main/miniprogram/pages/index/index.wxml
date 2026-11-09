@@ -1,16 +1,49 @@
-<!--
-  wxml 是页面的「结构」，决定屏幕上显示什么。
-  下面用到的几个基本标签：
-    <view> 相当于一个「盒子」，用来装东西、排版（类似网页的 div）
-    <text> 用来显示文字（类似网页的 span）
-
-  {{ }} 是数据绑定：花括号里写 js 里 data 的名字，页面就会显示它的值。
-  比如 {{title}} 会显示 data 里 title 的值「工资计时器」。
--->
-
+<!-- 首页：工钱配置表单 -->
 <view class="page">
-    <view class="card">
-        <text class="title">{{title}}</text>
-        <text class="desc">{{message}}</text>
+    <view class="header">
+        <text class="brand">{{appName}}</text>
+        <text class="slogan">填好今天的工钱，看着它一秒一秒涨</text>
     </view>
+
+    <view class="card">
+        <!-- 日薪：input 宽度随字数变化，让 ¥ 紧贴数字（见 index.wxss） -->
+        <view class="field">
+            <text class="label">日薪</text>
+            <view class="value-area">
+                <text class="unit">¥</text>
+                <input
+                    class="input"
+                    type="digit"
+                    value="{{dailySalary}}"
+                    style="width: {{(dailySalary.length || 3) * 0.58 + 0.2}}em"
+                    bindinput="onSalaryInput"
+                    placeholder="请输入"
+                    placeholder-class="input-placeholder"
+                />
+                <text class="suffix">元</text>
+            </view>
+        </view>
+
+        <view class="field">
+            <text class="label">上班时间</text>
+            <picker mode="time" value="{{startTime}}" bindchange="onStartChange">
+                <view class="value-area">
+                    <text class="time">{{startTime}}</text>
+                    <text class="arrow">›</text>
+                </view>
+            </picker>
+        </view>
+
+        <view class="field">
+            <text class="label">下班时间</text>
+            <picker mode="time" value="{{endTime}}" bindchange="onEndChange">
+                <view class="value-area">
+                    <text class="time">{{endTime}}</text>
+                    <text class="arrow">›</text>
+                </view>
+            </picker>
+        </view>
+    </view>
+
+    <button class="btn" bindtap="onStartWork">上班</button>
 </view>

@@ -1,14 +1,7 @@
-/* app.wxss 是「全局样式表」，这里写的样式对所有页面都生效。
-   单个页面自己的样式写在页面目录下的 .wxss 里。
-
-   WXSS 和网页的 CSS 很像，但单位常用 rpx：
-   小程序规定屏幕宽度固定为 750rpx，所以 750rpx 就是「一整屏宽」。
-   这样在不同手机上，界面比例会自动保持一致。 */
-
+/** 全局页面底色与字体，各页 wxss 在此基础上叠加布局 */
 page {
-    /* page 代表整个页面的根容器 */
     min-height: 100%;
     background: #f5f7fa;
     color: #1f2329;
-    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
 }

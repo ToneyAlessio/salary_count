@@ -1,15 +1,61 @@
-// 一个页面由 4 个文件组成，同名同目录：
-//   index.js   —— 页面的「逻辑」：数据、按钮点击后干什么
-//   index.wxml —— 页面的「结构」：屏幕上显示什么（类似网页的 HTML）
-//   index.wxss —— 页面的「样式」：颜色、大小、间距（类似网页的 CSS）
-//   index.json —— 页面的「配置」：标题栏文字等（注意：json 不能写注释）
-
+/**
+ * 首页：填写日薪与上下班时间，校验后写入本地并跳转薪资页。
+ *
+ * 本地存储键 salaryConfig：{ dailySalary, startTime, endTime }
+ * dailySalary 存字符串，避免用户输入「300.5」时被 Number 提前丢精度展示。
+ */
 Page({
-    // data 是页面的「数据仓库」。
-    // 这里定义的值，可以在 wxml 里用 {{名字}} 取出来显示。
-    // 重要：想改变屏幕上显示的内容，必须通过 setData 修改 data，直接赋值页面不会更新。
     data: {
-        title: '工资计时器',
-        message: '工程已经跑通了',
+        appName: '小羊碎银记',
+        /** 日薪默认值，与 input 双向绑定 */
+        dailySalary: '300',
+        startTime: '09:00',
+        endTime: '18:00',
+    },
+
+    /** 日薪输入：digit 类型允许小数点，值始终留在 data.dailySalary */
+    onSalaryInput(e) {
+        this.setData({
+            dailySalary: e.detail.value,
+        });
+    },
+
+    onStartChange(e) {
+        this.setData({
+            startTime: e.detail.value,
+        });
+    },
+
+    onEndChange(e) {
+        this.setData({
+            endTime: e.detail.value,
+        });
+    },
+
+    /**
+     * 「上班」：校验 → 持久化 → 打开薪资页（不经过服务端）。
+     */
+    onStartWork() {
+        const { dailySalary, startTime, endTime } = this.data;
+        const trimmed = String(dailySalary).trim();
+        if (!trimmed) {
+            wx.showToast({ title: '请输入日薪', icon: 'none' });
+            return;
+        }
+        const salary = Number(trimmed);
+        if (!Number.isFinite(salary) || salary <= 0) {
+            wx.showToast({ title: '日薪须为正数', icon: 'none' });
+            return;
+        }
+
+        wx.setStorageSync('salaryConfig', {
+            dailySalary: trimmed,
+            startTime,
+            endTime,
+        });
+
+        wx.navigateTo({
+            url: '/pages/salary/salary',
+        });
     },
 });
