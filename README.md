@@ -17,15 +17,16 @@ salary_count/
     └── miniprogram/          小程序源码
 ```
 
-## 当前版本（v1）
+## 当前版本（v1.1）
 
 | 页面 | 路径 | 作用 |
 | --- | --- | --- |
 | 输入页 | `pages/index` | 日薪 + 上下班时间 → 写入 `salaryConfig` → 跳转薪资页 |
-| 薪资页 | `pages/salary` | 实时计薪、提现、倒计时与进度条 |
-| 组件 | `components/vault-bag` | 牛皮纸袋展示小金库累计金额 |
+| 薪资页 | `pages/salary` | 实时计薪、提现、下班入账、倒计时与进度条 |
+| 组件 | `components/vault-bag` | 牛皮纸袋展示本班袋内金额 |
+| 组件 | `components/salary-card` | 工资卡展示累计入账（`salaryCardInfo`） |
 
-本地存储键：`salaryConfig`、`salaryPouch`（无云开发、无第三方框架）。
+本地存储键：`salaryConfig`、`salaryPouch`、`salaryCardInfo`（兼容 `salaryCardAmount`）；无云开发、无第三方框架。
 
 ## 快速开始
 

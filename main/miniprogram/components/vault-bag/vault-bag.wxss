@@ -27,7 +27,7 @@
 }
 
 .kf {
-    width: 360rpx;
+    width: 420rpx;
 }
 
 .kf-clip {
@@ -91,4 +91,33 @@
 .tone-kraft .bag-value {
     color: #5a3b1c;
     font-size: 50rpx;
+}
+
+/* 纸袋下方，不压在棕色袋身上 */
+.btn-clock-out {
+    margin-top: 24rpx;
+    width: 360rpx;
+    max-width: 100%;
+    height: 76rpx;
+    padding: 0;
+    border-radius: 40rpx;
+    background: #1769e0;
+    color: #ffffff;
+    font-size: 30rpx;
+    font-weight: 600;
+    line-height: 76rpx;
+    text-align: center;
+}
+
+.btn-clock-out::after {
+    border: none;
+}
+
+.btn-clock-out:active {
+    background: #1257bd;
+}
+
+.btn-clock-out[disabled] {
+    background: #c3c8cf;
+    color: #ffffff;
 }

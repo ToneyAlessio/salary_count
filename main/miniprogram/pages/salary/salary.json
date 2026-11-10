@@ -1,6 +1,7 @@
 {
   "navigationBarTitleText": "今日薪资",
   "usingComponents": {
-    "vault-bag": "/components/vault-bag/vault-bag"
+    "vault-bag": "/components/vault-bag/vault-bag",
+    "salary-card": "/components/salary-card/salary-card"
   }
 }

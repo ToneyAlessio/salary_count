@@ -3,16 +3,94 @@
  *
  * 存储：
  * - salaryConfig（首页写入）：日薪与上下班时间
- * - salaryPouch：{ balance, lastWithdrawAt, withdrawnThisShift, shiftKey }
+ * - salaryPouch：{ balance, lastWithdrawAt, withdrawnThisShift, shiftKey, clockedOutAt }
+ *   clockedOutAt：点「下班」后写入，实时薪资按该时刻冻结不再增长
  *   balance 跨班次累计；换班次时本班 withdrawn / lastWithdrawAt 重置，余额保留
  *
  * 展示规则：
  * - 「实时薪资」= 本班自上次提现时刻起赚取的金额（提现后从 0 再涨）
  * - 未到上班：界面实时与袋子上均显示 0.00（袋内 balance 仍持久化，仅展示为 0）
  * - 提现：把当前实时金额累加进 balance，并记入 withdrawnThisShift，刷新 lastWithdrawAt
+ * - 工资卡：salaryCardInfo { amount, updateDate, todayCredited, yesterday? }
+ *   下班：卡面 = 原卡面 − 当日已入账 + 本次袋内 balance（同日以最后一次下班为准）
+ *   跨日：将上一 updateDate 的 amount 写入 yesterday，再累加本班入账
  */
 
 const POUCH_STORAGE_KEY = 'salaryPouch';
+const CARD_STORAGE_KEY = 'salaryCardAmount';
+const CARD_INFO_KEY = 'salaryCardInfo';
+
+function formatLocalDate(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + d;
+}
+
+function normalizeYesterday(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+        return null;
+    }
+    if (raw.amount == null || raw.amount === '') {
+        return null;
+    }
+    return {
+        amount: formatMoney(Number(raw.amount) || 0),
+        date: raw.date ? String(raw.date) : '',
+    };
+}
+
+function readCardInfo() {
+    const info = wx.getStorageSync(CARD_INFO_KEY);
+    if (
+        info &&
+        typeof info === 'object' &&
+        !Array.isArray(info) &&
+        info.amount != null &&
+        info.amount !== ''
+    ) {
+        return {
+            amount: formatMoney(Number(info.amount) || 0),
+            updateDate: info.updateDate ? String(info.updateDate) : '',
+            todayCredited: formatMoney(Number(info.todayCredited) || 0),
+            yesterday: normalizeYesterday(info.yesterday),
+        };
+    }
+    const legacy = wx.getStorageSync(CARD_STORAGE_KEY);
+    if (legacy != null && legacy !== '') {
+        if (typeof legacy === 'string' || typeof legacy === 'number') {
+            return {
+                amount: formatMoney(Number(legacy) || 0),
+                updateDate: '',
+                todayCredited: '0.00',
+                yesterday: null,
+            };
+        }
+    }
+    return {
+        amount: '0.00',
+        updateDate: '',
+        todayCredited: '0.00',
+        yesterday: null,
+    };
+}
+
+/** @param {{ amount: number|string, updateDate: string, todayCredited?: number|string, yesterday?: { amount, date }|null }} record */
+function writeCardInfo(record) {
+    const cardIncomeText = formatMoney(Number(record.amount) || 0);
+    const payload = {
+        amount: cardIncomeText,
+        updateDate: record.updateDate ? String(record.updateDate) : '',
+        todayCredited: formatMoney(Number(record.todayCredited) || 0),
+    };
+    const yesterday = normalizeYesterday(record.yesterday);
+    if (yesterday) {
+        payload.yesterday = yesterday;
+    }
+    wx.setStorageSync(CARD_INFO_KEY, payload);
+    wx.setStorageSync(CARD_STORAGE_KEY, cardIncomeText);
+    return cardIncomeText;
+}
 
 /** 「HH:mm」→ 当天 0 点起的分钟数，用于比较上下班先后 */
 function timeToMinutes(timeStr) {
@@ -60,6 +138,19 @@ function formatMoney(value) {
         return '0.00';
     }
     return n.toFixed(2);
+}
+
+/** 剩余秒数拆成 h / m / s（分秒两位数，便于等宽对齐） */
+function splitCountdownHms(totalSeconds) {
+    const sec = Math.max(0, Math.floor(totalSeconds));
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    return {
+        countdownH: String(h),
+        countdownM: String(m).padStart(2, '0'),
+        countdownS: String(s).padStart(2, '0'),
+    };
 }
 
 /**
@@ -110,6 +201,7 @@ function readPouchRecord(shiftKeyValue) {
             lastWithdrawAt: null,
             withdrawnThisShift: 0,
             shiftKey: shiftKeyValue,
+            clockedOutAt: null,
         };
     }
     return {
@@ -117,6 +209,7 @@ function readPouchRecord(shiftKeyValue) {
         lastWithdrawAt: raw.lastWithdrawAt ?? null,
         withdrawnThisShift: Number(raw.withdrawnThisShift) || 0,
         shiftKey: shiftKeyValue,
+        clockedOutAt: raw.clockedOutAt ?? null,
     };
 }
 
@@ -139,8 +232,10 @@ function computeView(now, dailySalary, startTime, endTime, pouchRecord) {
         progressPercent: 0,
         statusText: '配置无效',
         canWithdraw: false,
+        canClockOut: false,
         liveAmount: 0,
         phase: 'before',
+        earlyClockOut: false,
     };
 
     if (!Number.isFinite(daily) || daily <= 0) {
@@ -152,6 +247,12 @@ function computeView(now, dailySalary, startTime, endTime, pouchRecord) {
     if (totalMs <= 0) {
         return { ...invalid, statusText: '时间配置有误' };
     }
+
+    const clockedOutAt = pouchRecord.clockedOutAt ?? null;
+    const earnNow =
+        clockedOutAt != null
+            ? new Date(Math.min(now.getTime(), clockedOutAt))
+            : now;
 
     const t = now.getTime();
 
@@ -169,15 +270,19 @@ function computeView(now, dailySalary, startTime, endTime, pouchRecord) {
             progressPercent: 0,
             statusText: '未到上班',
             canWithdraw: false,
+            canClockOut: false,
             liveAmount: 0,
             phase: 'before',
+            earlyClockOut: false,
         };
     }
 
+    const alreadyClockedOut = clockedOutAt != null && t >= clockedOutAt;
+    const progressAt = alreadyClockedOut ? clockedOutAt : t;
     const secondsToEnd = Math.max(0, Math.floor((end.getTime() - t) / 1000));
     let progressPercent = Math.min(
         100,
-        Math.max(0, ((t - start.getTime()) / totalMs) * 100),
+        Math.max(0, ((progressAt - start.getTime()) / totalMs) * 100),
     );
 
     let statusText = '上班中';
@@ -185,16 +290,23 @@ function computeView(now, dailySalary, startTime, endTime, pouchRecord) {
     let countdownSeconds = secondsToEnd;
     let phase = 'working';
 
-    if (t >= end.getTime()) {
+    let earlyClockOut = false;
+    if (alreadyClockedOut) {
+        earlyClockOut = clockedOutAt < end.getTime();
+        statusText = earlyClockOut ? '下班' : '已下班';
+        countdownLabel = '距离下班';
+        countdownSeconds = 0;
+        phase = 'after';
+    } else if (t >= end.getTime()) {
         statusText = '已下班';
         countdownSeconds = 0;
         progressPercent = 100;
         phase = 'after';
     }
 
-    const totalEarned = totalEarnedUntil(now, start, end, daily);
+    const totalEarned = totalEarnedUntil(earnNow, start, end, daily);
     let liveRaw = liveEarnedSinceWithdraw(
-        now,
+        earnNow,
         start,
         end,
         daily,
@@ -211,9 +323,12 @@ function computeView(now, dailySalary, startTime, endTime, pouchRecord) {
         countdownSeconds,
         progressPercent,
         statusText,
-        canWithdraw: liveRaw > 0.0005 && t < end.getTime(),
+        canWithdraw:
+            !alreadyClockedOut && liveRaw > 0.0005 && t < end.getTime(),
+        canClockOut: !alreadyClockedOut,
         liveAmount: liveRaw,
         phase,
+        earlyClockOut,
     };
 }
 
@@ -223,13 +338,20 @@ Page({
         endTime: '',
         liveSalaryText: '0.00',
         pouchSalaryText: '0.00',
+        cardIncomeText: '0.00',
         countdownLabel: '距离上班',
-        countdownSeconds: 0,
+        countdownH: '0',
+        countdownM: '00',
+        countdownS: '00',
         progressPercent: 0,
         statusText: '',
         canWithdraw: false,
-        /** 进度条右端文案：「09:00 上班」或「18:00 下班」 */
+        canClockOut: false,
+        progressFootStart: '',
+        progressFootNow: '',
         progressFootRight: '',
+        progressLabelLeft: 0,
+        showProgressNow: false,
     },
 
     onLoad() {
@@ -252,15 +374,55 @@ Page({
             endTime: config.endTime || '18:00',
         });
 
+        this.loadCardIncome();
+
         this.syncPouchShift();
         this.refreshSalary();
         this.startTicker();
     },
 
     onShow() {
+        this.loadCardIncome();
         this.syncPouchShift();
         this.refreshSalary();
         this.startTicker();
+    },
+
+    loadCardIncome() {
+        const info = readCardInfo();
+        this.setData({ cardIncomeText: info.amount });
+    },
+
+    /**
+     * 下班：袋内已入账累加到工资卡；跨日归档 yesterday；同日再下班则用本次袋内金额替换 todayCredited。
+     */
+    syncCardIncomeFromPouch() {
+        const today = formatLocalDate(new Date());
+        const info = readCardInfo();
+        const raw = wx.getStorageSync(POUCH_STORAGE_KEY) || {};
+        const deposit = Number(raw.balance) || 0;
+
+        let yesterday = info.yesterday;
+        let carried =
+            (Number(info.amount) || 0) - (Number(info.todayCredited) || 0);
+
+        if (info.updateDate && info.updateDate !== today) {
+            yesterday = {
+                amount: info.amount,
+                date: info.updateDate,
+            };
+            carried = Number(info.amount) || 0;
+        } else if (!info.updateDate) {
+            carried = Number(info.amount) || 0;
+        }
+
+        const cardIncomeText = writeCardInfo({
+            amount: carried + deposit,
+            updateDate: today,
+            todayCredited: deposit,
+            yesterday,
+        });
+        this.setData({ cardIncomeText });
     },
 
     onHide() {
@@ -286,6 +448,16 @@ Page({
 
     startTicker() {
         this.stopTicker();
+        const { startTime, endTime } = this.data;
+        if (!startTime || !endTime) {
+            return;
+        }
+        const now = new Date();
+        const { start, end } = resolveShiftWindow(now, startTime, endTime);
+        const record = readPouchRecord(shiftKey(start, end));
+        if (record.clockedOutAt != null && now.getTime() >= record.clockedOutAt) {
+            return;
+        }
         this._timer = setInterval(() => {
             this.refreshSalary();
         }, 1000);
@@ -334,29 +506,45 @@ Page({
             this._initialWaitSeconds = null;
         }
 
-        const progressFootRight =
-            view.phase === 'before'
-                ? `${this.data.startTime} 上班`
-                : `${this.data.endTime} 下班`;
+        const progressFootStart = '上班';
+        const progressFootRight = '下班';
+        let progressFootNow = '当下';
+        let showProgressNow =
+            progressPercent > 4 && progressPercent < 96;
+        if (view.earlyClockOut) {
+            progressFootNow = '提前下班';
+            showProgressNow = progressPercent > 0;
+        } else if (
+            view.phase === 'after' &&
+            this._pouchRecord.clockedOutAt
+        ) {
+            showProgressNow = false;
+        }
+        const progressLabelLeft = progressPercent;
+
+        const countdownParts = splitCountdownHms(view.countdownSeconds);
 
         this.setData({
             liveSalaryText: view.liveSalaryText,
             pouchSalaryText: view.pouchSalaryText,
             countdownLabel: view.countdownLabel,
-            countdownSeconds: view.countdownSeconds,
+            ...countdownParts,
             progressPercent,
             statusText: view.statusText,
             canWithdraw: view.canWithdraw,
+            canClockOut: view.canClockOut,
+            progressFootStart,
+            progressFootNow,
             progressFootRight,
+            progressLabelLeft,
+            showProgressNow,
         });
     },
 
-    /** 将当前实时金额写入小金库，并清零实时段起点（lastWithdrawAt = now） */
-    onWithdraw() {
+    withdrawLiveToPouch(showPouchToast) {
         const amount = this._liveAmount || 0;
         if (amount <= 0.0005) {
-            wx.showToast({ title: '暂无可提现金额', icon: 'none' });
-            return;
+            return false;
         }
 
         const { startTime, endTime } = this.data;
@@ -374,6 +562,49 @@ Page({
         this._pouchRecord = record;
         this.refreshSalary();
 
-        wx.showToast({ title: '已入小金库', icon: 'success' });
+        if (showPouchToast) {
+            wx.showToast({ title: '已入账', icon: 'success' });
+        }
+        return true;
+    },
+
+    onWithdraw() {
+        if (!this.withdrawLiveToPouch(true)) {
+            wx.showToast({ title: '暂无可提现金额', icon: 'none' });
+        }
+    },
+
+    onClockOut() {
+        if (!this.data.canClockOut) {
+            wx.showToast({
+                title: this.data.statusText === '未到上班' ? '未到上班时间' : '本班已下班',
+                icon: 'none',
+            });
+            return;
+        }
+
+        const { startTime, endTime } = this.data;
+        const now = new Date();
+        const { start, end } = resolveShiftWindow(now, startTime, endTime);
+        const key = shiftKey(start, end);
+
+        this.withdrawLiveToPouch(false);
+
+        const record = readPouchRecord(key);
+        record.clockedOutAt = now.getTime();
+        record.shiftKey = key;
+        writePouchRecord(record);
+        this._pouchRecord = record;
+
+        this.syncCardIncomeFromPouch();
+
+        record.balance = 0;
+        record.withdrawnThisShift = 0;
+        writePouchRecord(record);
+        this._pouchRecord = record;
+
+        this.refreshSalary();
+        this.stopTicker();
+        wx.showToast({ title: '下班啦，工钱已入卡', icon: 'success' });
     },
 });

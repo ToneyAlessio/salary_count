@@ -1,12 +1,17 @@
-/* 纵向三区：实时薪、小金库、进度条贴底（margin-top: auto） */
+/* 主内容在上，进度条区 margin-top: auto 贴屏幕底 */
 
 .page {
     box-sizing: border-box;
     min-height: 100vh;
-    padding: 48rpx 40rpx 64rpx;
+    padding: 40rpx 32rpx 48rpx;
     display: flex;
     flex-direction: column;
-    gap: 36rpx;
+}
+
+.block-main {
+    display: flex;
+    flex-direction: column;
+    gap: 28rpx;
 }
 
 .block-title {
@@ -17,9 +22,10 @@
 /* ---------- 实时薪资（顶部） ---------- */
 .block-live {
     display: flex;
+    flex-shrink: 0;
     flex-direction: column;
     align-items: center;
-    padding: 24rpx 16rpx 8rpx;
+    padding: 12rpx 16rpx 4rpx;
 }
 
 .amount-row {
@@ -50,7 +56,7 @@
 
 .amount.live {
     color: #1769e0;
-    font-size: 80rpx;
+    font-size: 72rpx;
 }
 
 .status-pill {
@@ -63,16 +69,17 @@
 }
 
 .btn-withdraw {
-    margin-top: 28rpx;
-    width: 320rpx;
-    height: 80rpx;
+    margin-top: 24rpx;
+    width: 480rpx;
+    max-width: 100%;
+    height: 76rpx;
     padding: 0;
     border-radius: 40rpx;
     background: #1769e0;
     color: #ffffff;
     font-size: 30rpx;
     font-weight: 600;
-    line-height: 80rpx;
+    line-height: 76rpx;
     text-align: center;
 }
 
@@ -89,18 +96,30 @@
     color: #ffffff;
 }
 
-/* ---------- 小金库 ---------- */
+/* ---------- 小金库（纸袋 + 下班） ---------- */
 .block-pouch {
     display: flex;
+    flex-shrink: 0;
     flex-direction: column;
     align-items: center;
-    padding: 4rpx 0 12rpx;
+    padding: 0;
 }
 
-/* ---------- 实时进度条（底部） ---------- */
+/* ---------- 工资卡 ---------- */
+.block-card {
+    display: flex;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 4rpx 0 8rpx;
+}
+
+/* ---------- 实时进度条（贴页面最底） ---------- */
 .block-progress {
+    flex-shrink: 0;
+    width: 100%;
     margin-top: auto;
-    padding: 16rpx 8rpx 0;
+    padding: 24rpx 8rpx 0;
 }
 
 .progress-meta {
@@ -115,14 +134,70 @@
     font-size: 28rpx;
 }
 
-.progress-meta-value {
-    color: #1769e0;
-    font-size: 32rpx;
-    font-weight: 700;
+.countdown-hms {
+    display: flex;
+    align-items: baseline;
     font-variant-numeric: tabular-nums;
 }
 
+.countdown-seg {
+    display: flex;
+    align-items: baseline;
+}
+
+.countdown-num {
+    color: #1769e0;
+    font-size: 36rpx;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.countdown-unit {
+    margin-left: 4rpx;
+    color: #8a9099;
+    font-size: 22rpx;
+    font-weight: 500;
+    line-height: 1;
+}
+
+.countdown-colon {
+    margin: 0 10rpx;
+    color: #c3c8cf;
+    font-size: 30rpx;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.progress-track-wrap {
+    position: relative;
+}
+
+.progress-row,
+.progress-foot {
+    display: flex;
+    align-items: center;
+    gap: 16rpx;
+}
+
+.progress-gutter,
+.time-mark-start,
+.time-mark-end {
+    flex-shrink: 0;
+    width: 56rpx;
+}
+
+.progress-gutter {
+    height: 1rpx;
+}
+
+.time-mark-start,
+.time-mark-end {
+    text-align: center;
+}
+
 .progress-track {
+    flex: 1;
+    min-width: 0;
     position: relative;
     height: 20rpx;
     border-radius: 999rpx;
@@ -159,14 +234,28 @@
 }
 
 .progress-foot {
-    display: flex;
-    justify-content: space-between;
     margin-top: 20rpx;
-    padding: 0 4rpx;
+}
+
+.progress-foot-inner {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    height: 36rpx;
 }
 
 .time-mark {
     color: #8a9099;
     font-size: 24rpx;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }
+
+.time-mark-follow {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    color: #1769e0;
+    font-weight: 500;
+}
+

@@ -13,4 +13,11 @@
             </view>
         </view>
     </view>
+    <button
+        class="btn-clock-out"
+        disabled="{{!canClockOut}}"
+        bindtap="onClockOutTap"
+    >
+        下班
+    </button>
 </view>

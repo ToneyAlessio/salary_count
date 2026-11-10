@@ -1,0 +1,25 @@
+<!-- 标准银行卡比例约 1.586 : 1（ISO/IEC 7810） -->
+<view class="card">
+    <view class="card-texture"></view>
+    <view class="card-shine"></view>
+    <view class="card-top">
+        <text class="card-brand">碎银工资卡</text>
+        <view class="card-pay">
+            <view class="card-pay-arc"></view>
+            <view class="card-pay-arc arc-2"></view>
+            <view class="card-pay-arc arc-3"></view>
+        </view>
+    </view>
+    <view class="card-chip">
+        <view class="chip-line"></view>
+        <view class="chip-line"></view>
+        <view class="chip-line"></view>
+    </view>
+    <view class="card-bottom">
+        <text class="card-label">收入</text>
+        <view class="card-amount">
+            <text class="card-currency">¥</text>
+            <text class="card-value">{{amount}}</text>
+        </view>
+    </view>
+</view>
