@@ -21,7 +21,7 @@ function resetIncomeForNewShift() {
 
 Page({
     data: {
-        appName: '小羊薪酬记',
+        appName: '小羊薪资记',
         /** 日薪默认值，与 input 双向绑定 */
         dailySalary: '300',
         startTime: '09:00',
