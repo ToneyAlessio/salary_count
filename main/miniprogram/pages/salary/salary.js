@@ -18,7 +18,6 @@
 
 const POUCH_STORAGE_KEY = 'salaryPouch';
 const { readCardInfo, writeCardInfo } = require('../../utils/cardStorage.js');
-const { pickMilestone } = require('../../utils/milestones.js');
 
 function formatLocalDate(date) {
     const y = date.getFullYear();
@@ -287,12 +286,9 @@ Page({
         progressFootRight: '',
         progressLabelLeft: 0,
         showProgressNow: false,
-        milestoneText: '',
-        milestonePop: false,
     },
 
     onLoad() {
-        this._milestoneKey = '';
         const config = wx.getStorageSync('salaryConfig');
         if (!config || !config.dailySalary) {
             wx.showToast({ title: '请先填写工钱配置', icon: 'none' });
@@ -462,29 +458,9 @@ Page({
 
         const countdownParts = splitCountdownHms(view.countdownSeconds);
 
-        let milestoneText = '';
-        let milestonePop = false;
-        if (view.phase === 'working' && !view.earlyClockOut) {
-            const hit = pickMilestone(view.liveAmount);
-            if (hit) {
-                milestoneText = hit.text;
-                const key = String(hit.amount) + '_' + hit.label;
-                if (key !== this._milestoneKey) {
-                    this._milestoneKey = key;
-                    milestonePop = true;
-                }
-            } else {
-                this._milestoneKey = '';
-            }
-        } else {
-            this._milestoneKey = '';
-        }
-
         this.setData({
             liveSalaryText: view.liveSalaryText,
             pouchSalaryText: view.pouchSalaryText,
-            milestoneText,
-            milestonePop,
             countdownLabel: view.countdownLabel,
             ...countdownParts,
             progressPercent,

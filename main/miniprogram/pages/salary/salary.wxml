@@ -8,12 +8,6 @@
             <text class="currency">¥</text>
             <text class="amount live">{{liveSalaryText}}</text>
         </view>
-        <view
-            wx:if="{{milestoneText}}"
-            class="milestone {{milestonePop ? 'milestone--pop' : ''}}"
-        >
-            <text class="milestone-text">{{milestoneText}}</text>
-        </view>
         <text class="status-pill">{{statusText}}</text>
         <button
             class="btn-withdraw"

@@ -24,7 +24,7 @@ salary_count/
 | --- | --- | --- |
 | 输入页 | `pages/index` | 日薪 + 时间 →「上班」；右上角设置 |
 | 设置页 | `pages/settings` | 工资卡卡面金额 |
-| 薪资页 | `pages/salary` | 实时薪、阶梯彩蛋、提现、下班 |
+| 薪资页 | `pages/salary` | 实时薪、提现、下班、进度条 |
 | 小金库 | `components/vault-bag` | 本班袋内金额 |
 | 工资卡 | `components/salary-card` | 累计入账（读 `salaryCardInfo`） |
 
