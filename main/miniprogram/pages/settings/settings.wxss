@@ -1,0 +1,73 @@
+.page {
+    box-sizing: border-box;
+    min-height: 100vh;
+    padding: 56rpx 40rpx 64rpx;
+}
+
+.card {
+    padding: 4rpx 36rpx;
+    border-radius: 28rpx;
+    background: #ffffff;
+    box-shadow: 0 8rpx 32rpx rgba(31, 35, 41, 0.06);
+}
+
+.field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 36rpx 0;
+}
+
+.label {
+    color: #1f2329;
+    font-size: 30rpx;
+    font-weight: 500;
+}
+
+.value-area {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-end;
+}
+
+.unit {
+    margin-right: 6rpx;
+    color: #8a9099;
+    font-size: 28rpx;
+}
+
+.input {
+    color: #1769e0;
+    font-size: 36rpx;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.input-placeholder {
+    color: #c3c8cf;
+    font-size: 30rpx;
+    font-weight: 400;
+}
+
+.btn {
+    margin-top: 60rpx;
+    height: 96rpx;
+    padding: 0;
+    border-radius: 48rpx;
+    background: #1769e0;
+    color: #ffffff;
+    font-size: 32rpx;
+    font-weight: 600;
+    line-height: 96rpx;
+    text-align: center;
+}
+
+.btn::after {
+    border: none;
+}
+
+.btn:active,
+.btn-hover {
+    background: #1257bd;
+}

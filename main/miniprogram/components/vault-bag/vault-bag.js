@@ -16,9 +16,6 @@ Component({
 
     methods: {
         onClockOutTap() {
-            if (!this.properties.canClockOut) {
-                return;
-            }
             this.triggerEvent('clockout');
         },
     },

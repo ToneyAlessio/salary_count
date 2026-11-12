@@ -117,7 +117,12 @@
     background: #1257bd;
 }
 
-.btn-clock-out[disabled] {
+.btn-clock-out[disabled],
+.btn-clock-out--muted {
     background: #c3c8cf;
     color: #ffffff;
+}
+
+.btn-clock-out--muted:active {
+    background: #a8adb5;
 }

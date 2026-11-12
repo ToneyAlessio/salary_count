@@ -1,5 +1,13 @@
 <!-- 首页：工钱配置表单 -->
 <view class="page">
+    <view
+        class="settings-entry"
+        hover-class="settings-entry-hover"
+        bindtap="onOpenSettings"
+    >
+        <text class="settings-entry-text">设置</text>
+    </view>
+
     <view class="header">
         <text class="brand">{{appName}}</text>
         <text class="slogan">填好今天的工钱，看着它一秒一秒涨</text>

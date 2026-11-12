@@ -112,4 +112,19 @@ Page({
             url: '/pages/salary/salary',
         });
     },
+
+    onOpenSettings() {
+        wx.navigateTo({
+            url: '/pages/settings/settings',
+            fail: (err) => {
+                console.error('打开设置页失败', err);
+                wx.showModal({
+                    title: '打不开设置页',
+                    content:
+                        '请确认：① 导入目录为 salary_count/main；② 工具栏点「编译」；③ 仍失败则「清缓存 → 全部清除」后再编译。',
+                    showCancel: false,
+                });
+            },
+        });
+    },
 });

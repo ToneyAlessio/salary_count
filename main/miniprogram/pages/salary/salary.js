@@ -17,79 +17,14 @@
  */
 
 const POUCH_STORAGE_KEY = 'salaryPouch';
-const CARD_STORAGE_KEY = 'salaryCardAmount';
-const CARD_INFO_KEY = 'salaryCardInfo';
+const { readCardInfo, writeCardInfo } = require('../../utils/cardStorage.js');
+const { pickMilestone } = require('../../utils/milestones.js');
 
 function formatLocalDate(date) {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const d = String(date.getDate()).padStart(2, '0');
     return y + '-' + m + '-' + d;
-}
-
-function normalizeYesterday(raw) {
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
-        return null;
-    }
-    if (raw.amount == null || raw.amount === '') {
-        return null;
-    }
-    return {
-        amount: formatMoney(Number(raw.amount) || 0),
-        date: raw.date ? String(raw.date) : '',
-    };
-}
-
-function readCardInfo() {
-    const info = wx.getStorageSync(CARD_INFO_KEY);
-    if (
-        info &&
-        typeof info === 'object' &&
-        !Array.isArray(info) &&
-        info.amount != null &&
-        info.amount !== ''
-    ) {
-        return {
-            amount: formatMoney(Number(info.amount) || 0),
-            updateDate: info.updateDate ? String(info.updateDate) : '',
-            todayCredited: formatMoney(Number(info.todayCredited) || 0),
-            yesterday: normalizeYesterday(info.yesterday),
-        };
-    }
-    const legacy = wx.getStorageSync(CARD_STORAGE_KEY);
-    if (legacy != null && legacy !== '') {
-        if (typeof legacy === 'string' || typeof legacy === 'number') {
-            return {
-                amount: formatMoney(Number(legacy) || 0),
-                updateDate: '',
-                todayCredited: '0.00',
-                yesterday: null,
-            };
-        }
-    }
-    return {
-        amount: '0.00',
-        updateDate: '',
-        todayCredited: '0.00',
-        yesterday: null,
-    };
-}
-
-/** @param {{ amount: number|string, updateDate: string, todayCredited?: number|string, yesterday?: { amount, date }|null }} record */
-function writeCardInfo(record) {
-    const cardIncomeText = formatMoney(Number(record.amount) || 0);
-    const payload = {
-        amount: cardIncomeText,
-        updateDate: record.updateDate ? String(record.updateDate) : '',
-        todayCredited: formatMoney(Number(record.todayCredited) || 0),
-    };
-    const yesterday = normalizeYesterday(record.yesterday);
-    if (yesterday) {
-        payload.yesterday = yesterday;
-    }
-    wx.setStorageSync(CARD_INFO_KEY, payload);
-    wx.setStorageSync(CARD_STORAGE_KEY, cardIncomeText);
-    return cardIncomeText;
 }
 
 /** 「HH:mm」→ 当天 0 点起的分钟数，用于比较上下班先后 */
@@ -352,9 +287,12 @@ Page({
         progressFootRight: '',
         progressLabelLeft: 0,
         showProgressNow: false,
+        milestoneText: '',
+        milestonePop: false,
     },
 
     onLoad() {
+        this._milestoneKey = '';
         const config = wx.getStorageSync('salaryConfig');
         if (!config || !config.dailySalary) {
             wx.showToast({ title: '请先填写工钱配置', icon: 'none' });
@@ -524,9 +462,29 @@ Page({
 
         const countdownParts = splitCountdownHms(view.countdownSeconds);
 
+        let milestoneText = '';
+        let milestonePop = false;
+        if (view.phase === 'working' && !view.earlyClockOut) {
+            const hit = pickMilestone(view.liveAmount);
+            if (hit) {
+                milestoneText = hit.text;
+                const key = String(hit.amount) + '_' + hit.label;
+                if (key !== this._milestoneKey) {
+                    this._milestoneKey = key;
+                    milestonePop = true;
+                }
+            } else {
+                this._milestoneKey = '';
+            }
+        } else {
+            this._milestoneKey = '';
+        }
+
         this.setData({
             liveSalaryText: view.liveSalaryText,
             pouchSalaryText: view.pouchSalaryText,
+            milestoneText,
+            milestonePop,
             countdownLabel: view.countdownLabel,
             ...countdownParts,
             progressPercent,

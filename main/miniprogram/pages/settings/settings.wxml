@@ -1,0 +1,21 @@
+<view class="page">
+    <view class="card">
+        <view class="field">
+            <text class="label">卡面金额</text>
+            <view class="value-area">
+                <text class="unit">¥</text>
+                <input
+                    class="input"
+                    type="digit"
+                    value="{{cardAmount}}"
+                    style="width: {{(cardAmount.length || 4) * 0.58 + 0.2}}em"
+                    bindinput="onCardAmountInput"
+                    placeholder="0.00"
+                    placeholder-class="input-placeholder"
+                />
+            </view>
+        </view>
+    </view>
+
+    <button class="btn" hover-class="btn-hover" bindtap="onSave">保存</button>
+</view>
